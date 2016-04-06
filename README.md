@@ -1,4 +1,4 @@
-# Misc Tools - Bulk whoIS lookup
+# Misc Tools - Bulk WhoIS lookup
 
 This tool allows you to run whois lookups against a list of domains through one script.
 
