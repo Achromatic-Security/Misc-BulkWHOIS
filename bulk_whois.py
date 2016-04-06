@@ -24,15 +24,15 @@ def parse_file(filename, output_file):
 """%noutput_file
 		for domain in input_file.readlines():
 			ndomain = tldextract.extract(domain)
-			domain = ndomain[1]+'.'+ndomain[2]
-			if domain not in domains_lookedup:
-				domains_lookedup.append(ndomain)
+			tld_domain = ndomain[1]+'.'+ndomain[2]
+			if tld_domain not in domains_lookedup:
+				domains_lookedup.append(tld_domain)
 				total_domain_count += 1
-				whois_data = get_whois_data(domain,1)
+				whois_data = get_whois_data(tld_domain,1)
 				if whois_data != 0:
 					data.append(whois_data)
 				else:
-					excluded_domains.append(domain)
+					excluded_domains.append(tld_domain)
 				time.sleep(2)
 		print """
 Attempted to retrieve whois information for %s domains
@@ -43,13 +43,13 @@ Unsuccessful lookups: %s
 	else:
 		for domain in input_file.readlines():
 			ndomain = tldextract.extract(domain)
-			domain = ndomain[1]+'.'+ndomain[2]
-			if domain not in domains_lookedup:
-				domains_lookedup.append(domain)
+			tld_domain = ndomain[1]+'.'+ndomain[2]
+			if tld_domain not in domains_lookedup:
+				domains_lookedup.append(tld_domain)
 				total_domain_count += 1
-				whois_info = get_whois_data(domain,2)
+				whois_info = get_whois_data(tld_domain,2)
 				if whois_info != 0:
-					print "\n****************** %s ******************"%domain.strip()
+					print "\n****************** %s ******************"%tld_domain.strip()
 					for key,value in whois_info.items():
 						print key+": "+value
 				else:
