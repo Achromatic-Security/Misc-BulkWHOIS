@@ -12,32 +12,59 @@ sudo pip install pythonwhois should do it on debian based systems with pip insta
 
 def parse_file(filename, output_file):
 	input_file = open(filename,'r')
+	excluded_domains = []
+	total_domain_count = 0
 	if output_file != 0:
 		data = [csv_headers()]
 		noutput_file = output_file.split('.',1)[0]+'.csv'
+		print """
+****************** Writing output to %s ******************
+"""%noutput_file
 		for domain in input_file.readlines():
-			data.append(get_whois_data(domain,1))
+			total_domain_count += 1
+			whois_data = get_whois_data(domain,1)
+			if whois_data != 0:
+				data.append(whois_data)
+			else:
+				excluded_domains.append(domain)
+		print """
+Attempted to retrieve whois information for %s domains
+Successful lookups: %s
+Unsuccessful lookups: %s
+"""%(str(total_domain_count),str(total_domain_count-len(excluded_domains)),str(len(excluded_domains)))				
 		write_to_file(data,noutput_file)
 	else:
 		for domain in input_file.readlines():
+			total_domain_count += 1
 			whois_info = get_whois_data(domain,2)
-			print "\n****************** %s ******************"%domain.strip()
-			for key,value in whois_info.items():
-				print key+": "+value
-		
+			if whois_info != 0:
+				print "\n****************** %s ******************"%domain.strip()
+				for key,value in whois_info.items():
+					print key+": "+value
+			else:
+				excluded_domains.append(domain)
+		print """
+Attempted to retrieve whois information for %s domains
+Successful lookups: %s
+Unsuccessful lookups: %s
+"""%(str(total_domain_count),str(total_domain_count-len(excluded_domains)),str(len(excluded_domains)))
+	 
 def get_whois_data(domain,return_type):
 	whois = pythonwhois.get_whois(domain.strip())
-	creation_date = whois['creation_date']
-	updated_date = whois['updated_date']
-	expiry_date = whois['expiration_date']
-	organisation = str(whois['contacts']['registrant']['organization'])
-	name = str(whois['contacts']['registrant']['name'])
-	email = str(whois['contacts']['registrant']['email'])
-	phone = str(whois['contacts']['registrant']['phone'])
-	street = str(whois['contacts']['registrant']['street'])
-	city = str(whois['contacts']['registrant']['city'])
-	postcode = str(whois['contacts']['registrant']['postalcode'])
-	country = str(whois['contacts']['registrant']['country'])
+	try:
+		creation_date = whois['creation_date']
+		updated_date = whois['updated_date']
+		expiry_date = whois['expiration_date']
+		organisation = str(whois['contacts']['registrant']['organization'])
+		name = str(whois['contacts']['registrant']['name'])
+		email = str(whois['contacts']['registrant']['email'])
+		phone = str(whois['contacts']['registrant']['phone'])
+		street = str(whois['contacts']['registrant']['street'])
+		city = str(whois['contacts']['registrant']['city'])
+		postcode = str(whois['contacts']['registrant']['postalcode'])
+		country = str(whois['contacts']['registrant']['country'])
+	except:
+		return 0
 	if return_type == 1:
 		return (domain.strip(),creation_date[0].strftime('%m/%d/%Y %H:%M'),updated_date[0].strftime('%m/%d/%Y %H:%M'),expiry_date[0].strftime('%m/%d/%Y %H:%M'),organisation,name,email,phone,street,city,postcode,country)
 	else:
