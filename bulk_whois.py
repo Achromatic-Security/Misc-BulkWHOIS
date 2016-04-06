@@ -1,7 +1,8 @@
 #!/usr/bin/python 
 try:
 	import pythonwhois
-	import csv,datetime,sys,os,argparse
+	import tldextract
+	import csv,datetime,time,sys,os,argparse
 	from collections import OrderedDict
 except:
 	print """
@@ -12,6 +13,7 @@ sudo pip install pythonwhois should do it on debian based systems with pip insta
 
 def parse_file(filename, output_file):
 	input_file = open(filename,'r')
+	domains_lookedup = []
 	excluded_domains = []
 	total_domain_count = 0
 	if output_file != 0:
@@ -21,12 +23,17 @@ def parse_file(filename, output_file):
 ****************** Writing output to %s ******************
 """%noutput_file
 		for domain in input_file.readlines():
-			total_domain_count += 1
-			whois_data = get_whois_data(domain,1)
-			if whois_data != 0:
-				data.append(whois_data)
-			else:
-				excluded_domains.append(domain)
+			ndomain = tldextract.extract(domain)
+			domain = ndomain[1]+'.'+ndomain[2]
+			if domain not in domains_lookedup:
+				domains_lookedup.append(ndomain)
+				total_domain_count += 1
+				whois_data = get_whois_data(domain,1)
+				if whois_data != 0:
+					data.append(whois_data)
+				else:
+					excluded_domains.append(domain)
+				time.sleep(2)
 		print """
 Attempted to retrieve whois information for %s domains
 Successful lookups: %s
@@ -35,22 +42,31 @@ Unsuccessful lookups: %s
 		write_to_file(data,noutput_file)
 	else:
 		for domain in input_file.readlines():
-			total_domain_count += 1
-			whois_info = get_whois_data(domain,2)
-			if whois_info != 0:
-				print "\n****************** %s ******************"%domain.strip()
-				for key,value in whois_info.items():
-					print key+": "+value
-			else:
-				excluded_domains.append(domain)
+			ndomain = tldextract.extract(domain)
+			domain = ndomain[1]+'.'+ndomain[2]
+			if domain not in domains_lookedup:
+				domains_lookedup.append(domain)
+				total_domain_count += 1
+				whois_info = get_whois_data(domain,2)
+				if whois_info != 0:
+					print "\n****************** %s ******************"%domain.strip()
+					for key,value in whois_info.items():
+						print key+": "+value
+				else:
+					excluded_domains.append(domain)
+				time.sleep(2)
 		print """
 Attempted to retrieve whois information for %s domains
 Successful lookups: %s
 Unsuccessful lookups: %s
 """%(str(total_domain_count),str(total_domain_count-len(excluded_domains)),str(len(excluded_domains)))
+		print excluded_domains
 	 
 def get_whois_data(domain,return_type):
-	whois = pythonwhois.get_whois(domain.strip())
+	try:
+		whois = pythonwhois.get_whois(domain.strip())
+	except:
+		return 0
 	try:
 		creation_date = whois['creation_date']
 		updated_date = whois['updated_date']
@@ -119,5 +135,3 @@ Thanks.
 	else:
 		input_file = args["input_file"]
 		main(input_file,0)
-		
-		
