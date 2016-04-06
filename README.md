@@ -24,9 +24,5 @@ usage: bulk_whois.py [-h] -i INPUT_FILE [-o OUTPUT_FILE]
 
 *If the -o is not provided then the results will be written to stdout
 
-Also you will need to ensure that the file containing the domains you wish to perform whois lookups against are formatted as one domain per line such as:
-
-achromatic-security.com
-google.com
-bbc.co.uk
+Also you will need to ensure that the file containing the domains you wish to perform whois lookups against are formatted as one domain per line.
 
